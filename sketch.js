@@ -21,6 +21,10 @@ let touchMousePos = {
     x: 0,
     y: 0
 };
+let previousState = {
+    grid: undefined,
+    score: 0
+};
 
 function setup() {
     noLoop();
@@ -63,12 +67,22 @@ function mousePressed(){
       ){
         startNewGame();
     }
+    
+    if(mouseX > innerWidth / 2 - 100 + 3 * rectLength &&
+       mouseX < innerWidth / 2 + 100 + 3 * rectLength &&
+       mouseY > innerHeight / 2 - 50 &&
+       mouseY < innerHeight / 2 + 50
+      ){
+        touchMousePos.x = 100000000000;
+        grid = previousState.grid;
+        score = previousState.score;
+    }
 }
 
 function mouseReleased(){
     let xDiff = mouseX - touchMousePos.x;
     let yDiff = mouseY - touchMousePos.y;
-    if(abs(xDiff) < 20 && abs(yDiff) < 20){
+    if(abs(xDiff) < 50 && abs(yDiff) < 50 || abs(xDiff) > innerWidth){
         console.log("Touch ignored");
         return;
     }
@@ -101,7 +115,8 @@ function makeMove(dir){
     let transposed = false;
     let played = true;
     
-    let previousGrid = copyGrid(grid);
+    previousState.grid = copyGrid(grid);
+    previousState.score = score;
     
     switch(dir){
         case directions.RIGHT:
@@ -143,7 +158,7 @@ function makeMove(dir){
         }
         
         // only add a new number if something moved
-        if(compareGrid(grid, previousGrid)){
+        if(compareGrid(grid, previousState.grid)){
             let spot = addNumber(grid);
         }
         
@@ -171,6 +186,15 @@ function draw(){
     text("Score: " + score, startingPoint.x, startingPoint.y - 60);
     textAlign(RIGHT, CENTER);
     text("Best: " + storageManager.getBestScore(), startingPoint.x + 4 * rectLength, startingPoint.y - 60);
+    //create undo button
+    strokeWeight(4);
+    stroke(255);
+    fill('#4c525b');
+    rect(innerWidth / 2 - 100 + 3 * rectLength, innerHeight / 2 - 50, 200, 100);
+    noStroke();
+    fill(0);
+    textAlign(CENTER, CENTER);
+    text("Undo", innerWidth / 2 + 3 * rectLength, innerHeight / 2);
 }
 
 
@@ -179,6 +203,7 @@ function startNewGame(){
     grid = getBlankGrid();
     addNumber(grid);
     addNumber(grid);
+    previousState.grid = grid;
     if (debug){
         console.table(getGridValues(grid));
     }

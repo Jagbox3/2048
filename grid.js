@@ -27,7 +27,7 @@ function getBlankGrid(){
 }
 
 // Sets the current grid to a given grid
-function createTestGrid(testGrid){
+function loadGrid(testGrid){
     for(let i = 0; i < 4; i++){
         for(let j = 0; j < 4; j++){
             grid[i][j] = new Cell(j, i, testGrid[i][j]);
