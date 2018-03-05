@@ -25,11 +25,11 @@ function StorageManager(){
         let testKey = "test";
         let s = window.localStorage;
         try {
-            storage.setItem(testKey, "1");
-            storage.removeItem(testKey);
+            s.setItem(testKey, "1");
+            s.removeItem(testKey);
             return true;
         } catch (error){
-            print("NO STORAGE :(");
+            print(error);
             return false;
         }
     }
