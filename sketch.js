@@ -11,6 +11,16 @@ let startingPoint = {
     x: window.innerWidth / 2 - 2 * rectLength,
     y: window.innerHeight / 2 - 2 * rectLength
 };
+let directions = {
+    RIGHT: 0,
+    LEFT: 1,
+    DOWN: 2,
+    UP: 3
+};
+let touchMousePos = {
+    x: 0,
+    y: 0
+};
 
 function setup() {
     noLoop();
@@ -23,27 +33,91 @@ function setup() {
 }
 
 function keyPressed(){
+    let direction = -1;
+    switch(keyCode){
+        case RIGHT_ARROW:
+            direction = directions.RIGHT;
+            break;
+        case LEFT_ARROW:
+            direction = directions.LEFT;
+            break;
+        case DOWN_ARROW:
+            direction = directions.DOWN;
+            break;
+        case UP_ARROW:
+            direction = directions.UP;
+            break;
+    }
+    if(direction != -1){
+        makeMove(direction);
+    }
+}
+
+function mousePressed(){
+    touchMousePos.x = mouseX;
+    touchMousePos.y = mouseY;
+    
+    if(isGameOver() &&
+       mouseX > innerWidth / 2 - 100 && mouseX < innerWidth / 2 + 100 &&
+       mouseY > innerHeight / 2 - 50 && mouseY < innerHeight / 2 + 50 
+      ){
+        startNewGame();
+    }
+}
+
+function mouseReleased(){
+    let xDiff = mouseX - touchMousePos.x;
+    let yDiff = mouseY - touchMousePos.y;
+    if(abs(xDiff) < 20 && abs(yDiff) < 20){
+        console.log("Touch ignored");
+        return;
+    }
+    console.log(xDiff + " " + yDiff);
+    if(abs(xDiff) >= abs(yDiff)){
+        if(xDiff > 0){
+            makeMove(directions.RIGHT);
+            console.log("R");
+            return;
+        }
+        makeMove(directions.LEFT);
+        console.log("L");
+        return;
+    } else {
+        if(yDiff > 0){
+            makeMove(directions.DOWN);
+            console.log("D");
+            return;
+        }
+        makeMove(directions.UP);
+        console.log("U");
+        return;
+    }
+    
+}
+
+function makeMove(dir){
+    
     let flipped = false;
     let transposed = false;
     let played = true;
     
     let previousGrid = copyGrid(grid);
     
-    switch(keyCode){
-        case RIGHT_ARROW:
+    switch(dir){
+        case directions.RIGHT:
             //do nothing
             break;
-        case LEFT_ARROW:
+        case directions.LEFT:
             //flip grid
             grid = flipGrid(grid);
             flipped = true;
             break;
-        case DOWN_ARROW:            
+        case directions.DOWN:            
             // turn left
             grid = transposeGrid(grid);
             transposed = true;
             break;
-        case UP_ARROW:
+        case directions.UP:
             // turn right
             grid = transposeGrid(grid);
             grid = flipGrid(grid);
@@ -168,15 +242,6 @@ function drawGrid() {
         if (t >= 200){
             noLoop();
         }
-    }
-}
-
-function mousePressed(){
-    if(isGameOver() &&
-       mouseX > innerWidth / 2 - 100 && mouseX < innerWidth / 2 + 100 &&
-       mouseY > innerHeight / 2 - 50 && mouseY < innerHeight / 2 + 50 
-      ){
-        startNewGame();
     }
 }
 
