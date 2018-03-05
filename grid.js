@@ -7,8 +7,9 @@ let colors = {
     32: '#ed551e',
     64: '#a82710',
     128: '#af1c4f',
-    256: '#b7285a',
-    1024: '#8e3166',
+    256: '#8e3166',
+    512: '#7a1135',
+    1024: '#41135b',
     2048: '#0007a0',
     4096: '#22682a'
 };
@@ -25,7 +26,7 @@ function getBlankGrid(){
     return blankGrid;
 }
 
-// Sets the current grid to a 
+// Sets the current grid to a given grid
 function createTestGrid(testGrid){
     for(let i = 0; i < 4; i++){
         for(let j = 0; j < 4; j++){

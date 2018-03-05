@@ -40,7 +40,6 @@ function Cell(x, y, value, isNew = 0){
             // update position in grid
             let newCell = new Cell(this.pos.x+1, this.pos.y, this.value);
             grid[this.pos.y][this.pos.x+1] = newCell;
-            this.animateMovement(50);
             newCell.moveRight();
         }
         if(this.pos.x > 0){
@@ -61,15 +60,6 @@ function Cell(x, y, value, isNew = 0){
         }
         if(this.pos.x > 0){
             grid[this.pos.y][this.pos.x-1].combineRight();
-        }
-    }
-    
-    this.animateMovement = function(n){
-        fill(colors[this.value.toString()]);
-        noStroke();
-        rect(startingPoint.x + (this.pos.x + n/50) * rectLength, startingPoint.y + (this.pos.y + n/50) * rectLength, rectLength, rectLength);
-        if (n > 0){
-            this.animateMovement(n-1);
         }
     }
     

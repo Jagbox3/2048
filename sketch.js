@@ -2,6 +2,7 @@
 
 let grid;
 let score = 0;
+let storageManager;
 
 let t = 0;
 let debug = false;
@@ -12,9 +13,12 @@ let startingPoint = {
 };
 
 function setup() {
+    noLoop();
     unloadScrollBars();
     createCanvas(window.innerWidth, window.innerHeight);
     colorMode(RGB);
+    
+    storageManager = new StorageManager();
     startNewGame();
 }
 
@@ -78,20 +82,26 @@ function keyPressed(){
 }
 
 function draw(){
+    //draw base layer
     background('#f9b77c');
+    textSize(22);
+    textAlign(CENTER, CENTER);
+    text("HOW TO PLAY: Use your arrow keys to move the tiles. When", innerWidth / 2, startingPoint.y + 4 * rectLength + 40);
+    text("two tiles with the same number touch, they merge into one!", innerWidth / 2, startingPoint.y + 4 * rectLength + 70);
     drawGrid();
     fill(0);
     noStroke();
     //@todo: make text size scalable
     textSize(48);
-    text("Score: " + score, innerWidth / 2, startingPoint.y - 60);
-    textSize(22);
-    text("HOW TO PLAY: Use your arrow keys to move the tiles. When", innerWidth / 2, startingPoint.y + 4 * rectLength + 40);
-    text("two tiles with the same number touch, they merge into one!", innerWidth / 2, startingPoint.y + 4 * rectLength + 70);
+    textAlign(LEFT, CENTER);
+    text("Score: " + score, startingPoint.x, startingPoint.y - 60);
+    textAlign(RIGHT, CENTER);
+    text("Best: " + storageManager.getBestScore(), startingPoint.x + 4 * rectLength, startingPoint.y - 60);
 }
 
 
 function startNewGame(){
+    score = 0;
     grid = getBlankGrid();
     addNumber(grid);
     addNumber(grid);
@@ -122,6 +132,10 @@ function drawGrid() {
         for(let j = 0; j < 4; j++){
             rect(startingPoint.x + j * rectLength, startingPoint.y + i * rectLength, rectLength, rectLength);
         }
+    }
+    
+    if (score > storageManager.getBestScore()){
+        storageManager.setBestScore(score);
     }
     
     if(isGameOver()){
