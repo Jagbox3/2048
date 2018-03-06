@@ -11,11 +11,12 @@ let startingPoint = {
     x: window.innerWidth / 2 - 2 * rectLength,
     y: window.innerHeight / 2 - 2 * rectLength
 };
+let buttons = [];
 let directions = {
-    RIGHT: 0,
-    LEFT: 1,
-    DOWN: 2,
-    UP: 3
+    RIGHT: "RIGHT",
+    LEFT: "LEFT",
+    DOWN: "DOWN",
+    UP: "UP"
 };
 let touchMousePos = {
     x: 0,
@@ -31,9 +32,22 @@ function setup() {
     unloadScrollBars();
     createCanvas(window.innerWidth, window.innerHeight);
     colorMode(RGB);
-    
+
     storageManager = new StorageManager();
     startNewGame();
+
+    //undo button
+    buttons.push(new Button(innerWidth / 2 - 100 + 3 * rectLength, innerHeight / 2 + 50, 200, 100, "Undo"));
+    buttons[buttons.length - 1].isClicked = function(){
+        touchMousePos.x = 100000000000;
+        grid = previousState.grid;
+        score = previousState.score;
+    }
+    //new game button
+    buttons.push(new Button(innerWidth / 2 - 100 + 3 * rectLength, innerHeight / 2 - 150, 200, 100, "New Game"));
+    buttons[buttons.length - 1].isClicked = function(){
+        startNewGame();
+    }
 }
 
 function keyPressed(){
@@ -60,22 +74,9 @@ function keyPressed(){
 function mousePressed(){
     touchMousePos.x = mouseX;
     touchMousePos.y = mouseY;
-    
-    if(isGameOver() &&
-       mouseX > innerWidth / 2 - 100 && mouseX < innerWidth / 2 + 100 &&
-       mouseY > innerHeight / 2 - 50 && mouseY < innerHeight / 2 + 50 
-      ){
-        startNewGame();
-    }
-    
-    if(mouseX > innerWidth / 2 - 100 + 3 * rectLength &&
-       mouseX < innerWidth / 2 + 100 + 3 * rectLength &&
-       mouseY > innerHeight / 2 - 50 &&
-       mouseY < innerHeight / 2 + 50
-      ){
-        touchMousePos.x = 100000000000;
-        grid = previousState.grid;
-        score = previousState.score;
+
+    for(let i = 0; i < buttons.length; i++){
+        buttons[i].checkClicked();
     }
 }
 
@@ -87,37 +88,36 @@ function mouseReleased(){
         return;
     }
     console.log(xDiff + " " + yDiff);
+    let dir;
     if(abs(xDiff) >= abs(yDiff)){
         if(xDiff > 0){
-            makeMove(directions.RIGHT);
-            console.log("R");
-            return;
+            dir = directions.RIGHT;
+        } else {
+            dir = directions.LEFT;
         }
-        makeMove(directions.LEFT);
-        console.log("L");
-        return;
     } else {
         if(yDiff > 0){
-            makeMove(directions.DOWN);
-            console.log("D");
-            return;
+            dir = directions.DOWN;
+        } else {
+            dir = directions.UP;
         }
-        makeMove(directions.UP);
-        console.log("U");
-        return;
     }
-    
+    makeMove(dir);
+    if(debug){
+        console.log(dir);
+    }
+
 }
 
 function makeMove(dir){
-    
+
     let flipped = false;
     let transposed = false;
     let played = true;
-    
+
     previousState.grid = copyGrid(grid);
     previousState.score = score;
-    
+
     switch(dir){
         case directions.RIGHT:
             //do nothing
@@ -127,7 +127,7 @@ function makeMove(dir){
             grid = flipGrid(grid);
             flipped = true;
             break;
-        case directions.DOWN:            
+        case directions.DOWN:
             // turn left
             grid = transposeGrid(grid);
             transposed = true;
@@ -142,32 +142,32 @@ function makeMove(dir){
         default:
             played = false;
     }
-    
+
     if (played){
-        
+
         for(let i = 0; i < 4; i++){
             grid[i][3].horizontalSlide();
         }
-        
+
         if (flipped){
             grid = flipGrid(grid);
         }
-        
+
         if (transposed){
             grid = transposeGrid(grid);
         }
-        
+
         // only add a new number if something moved
         if(compareGrid(grid, previousState.grid)){
             let spot = addNumber(grid);
         }
-        
+
         // print out the values if debug mode on
         if (debug){
             console.table(getGridValues(grid));
         }
     }
-    
+
 }
 
 function draw(){
@@ -186,15 +186,10 @@ function draw(){
     text("Score: " + score, startingPoint.x, startingPoint.y - 60);
     textAlign(RIGHT, CENTER);
     text("Best: " + storageManager.getBestScore(), startingPoint.x + 4 * rectLength, startingPoint.y - 60);
-    //create undo button
-    strokeWeight(4);
-    stroke(255);
-    fill('#4c525b');
-    rect(innerWidth / 2 - 100 + 3 * rectLength, innerHeight / 2 - 50, 200, 100);
-    noStroke();
-    fill(0);
-    textAlign(CENTER, CENTER);
-    text("Undo", innerWidth / 2 + 3 * rectLength, innerHeight / 2);
+
+    for(let i = 0; i < buttons.length; i++){
+        buttons[i].draw();
+    }
 }
 
 
@@ -211,18 +206,18 @@ function startNewGame(){
 }
 
 function drawGrid() {
-    
+
     // draw the base
     fill("#aaaaaa");
     rect(startingPoint.x, startingPoint.y, rectLength*4, rectLength*4);
-    
+
     // draw the individual squares
     for(let i = 0; i < 4; i++){
         for(let j = 0; j < 4; j++){
             grid[i][j].draw();
         }
     }
-    
+
     // draw the grid pattern
     noFill();
     strokeWeight(4);
@@ -232,11 +227,11 @@ function drawGrid() {
             rect(startingPoint.x + j * rectLength, startingPoint.y + i * rectLength, rectLength, rectLength);
         }
     }
-    
+
     if (score > storageManager.getBestScore()){
         storageManager.setBestScore(score);
     }
-    
+
     if(isGameOver()){
         t += 4;
         console.log("game over");
@@ -257,13 +252,13 @@ function drawGrid() {
         textSize(32);
         text("Written by Jeff Putlock", innerWidth / 2, startingPoint.y + 2 * rectLength + 125);
         text("Based on 2048 by Gabriele Cirulli", innerWidth / 2, startingPoint.y + 2 * rectLength + 170);
-        strokeWeight(4);
-        stroke(255);
-        fill('#f9cd8e');
-        rect(innerWidth / 2 - 100, innerHeight / 2 - 50, 200, 100);
-        noStroke();
-        fill(0);
-        text("Play Again?", innerWidth / 2, innerHeight / 2);
+        // strokeWeight(4);
+        // stroke(255);
+        // fill('#f9cd8e');
+        // rect(innerWidth / 2 - 100, innerHeight / 2 - 50, 200, 100);
+        // noStroke();
+        // fill(0);
+        // text("Play Again?", innerWidth / 2, innerHeight / 2);
         if (t >= 200){
             noLoop();
         }
@@ -276,7 +271,7 @@ function drawGrid() {
 * (b) No two of the same number are adjacent
 **/
 function isGameOver(){
-    
+
     for(let i = 0; i < 4; i++){
         for(let j = 0; j < 4; j++){
             //no zeros
